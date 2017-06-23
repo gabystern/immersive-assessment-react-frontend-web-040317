@@ -1,15 +1,12 @@
 import React, { Component } from 'react'
 import TransactionsList from './TransactionsList'
 import Search from './Search'
+import TransactionsAdapter from './adapters'
 
 class AccountContainer extends Component {
 
   constructor() {
     super()
-
-    // we have provided this default state for you,
-    // use this to get the functionality working
-    // and then replace the default transactions with a call to the API
 
     this.state = {
       searchTerm: '',
@@ -26,8 +23,7 @@ class AccountContainer extends Component {
   }
 
   componentDidMount(){
-    fetch("https://boiling-brook-94902.herokuapp.com/transactions")
-    .then((resp) => resp.json())
+    TransactionsAdapter.all()
     .then((transactions) => {
       this.setState({
         transactions
@@ -35,12 +31,19 @@ class AccountContainer extends Component {
     })
   }
 
-  render() {
+  matchingTransactions(){
+    return this.state.transactions.filter(t => this.transactionMatches(t, this.state.searchTerm))
+  }
 
+  transactionMatches(transaction, searchTerm){
+    return transaction.description.toLowerCase().includes(this.state.searchTerm.toLowerCase()) || transaction.category.toLowerCase().includes(this.state.searchTerm.toLowerCase())
+  }
+
+  render() {
     return (
       <div>
-        <Search searchTerm={this.state.searchTerm} handleChange={(text) => this.handleChange(text)} />
-        <TransactionsList transactions={this.state.transactions} searchTerm={this.state.searchTerm} />
+        <Search searchTerm={this.state.searchTerm} handleChange={(event) => this.handleChange(event)} />
+        <TransactionsList transactions={matchingTransactions()} />
       </div>
     )
   }
